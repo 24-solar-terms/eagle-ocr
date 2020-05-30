@@ -1,12 +1,12 @@
 # coding:utf-8
 ##添加文本方向 检测模型，自动检测文字方向，0、90、180、270
 from math import *
-
 import cv2
 import numpy as np
 from PIL import Image
 import sys
 import copy  #copy库
+
 sys.path.append("ocr")
 from .angle.predict import predict as angle_detect  ##文字方向检测
 
@@ -15,6 +15,7 @@ from .crnn.crnn import crnnOcr
 from .ctpn.text_detect import text_detect
 from .ctpn.ctpn.other import resize_im  #获取图片resize比例
 from .ocr.model import predict as ocr
+from .east import east_detect
 
 
 def crnnRec(im, text_recs, ocrMode='keras', adjust=False):
@@ -24,7 +25,6 @@ def crnnRec(im, text_recs, ocrMode='keras', adjust=False):
     @@converter,
     @@im:Array
     @@text_recs:text box
-
     """
     index = 0
     results = {}
@@ -48,9 +48,12 @@ def crnnRec(im, text_recs, ocrMode='keras', adjust=False):
             pt3 = (min(rec[6], xDim - 2), min(yDim - 2, rec[7]))
             pt4 = (rec[4], rec[5])
 
-        degree = degrees(atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]))  ##图像倾斜角度
+        degree = degrees(atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]))  # 图像倾斜角度
 
         partImg = dumpRotateImage(im, degree, pt1, pt2, pt3, pt4)
+        # cv2.imshow('s', partImg)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         # 根据ctpn进行识别出的文字区域，进行不同文字区域的crnn识别
         image = Image.fromarray(partImg).convert('L')
         # 进行识别出的文字识别
@@ -59,7 +62,7 @@ def crnnRec(im, text_recs, ocrMode='keras', adjust=False):
         else:
             sim_pred = crnnOcr(image)
 
-        results[index].append(sim_pred)  ##识别文字
+        results[index].append(sim_pred)  # 识别文字
 
     return results
 
@@ -88,19 +91,18 @@ def dumpRotateImage(img, degree, pt1, pt2, pt3, pt4):
     # height,width=imgOut.shape[:2]
     return imgOut
 
-
-def model(img, model='keras', adjust=False, detectAngle=False):
+#ctpn model
+def model(img, img_path, model='keras', adjust=False, detectAngle=False, detect="ctpn"):
     """
     @@param:img,
     @@param:model,选择的ocr模型，支持keras\pytorch版本
     @@param:adjust 调整文字识别结果
     @@param:detectAngle,是否检测文字朝向
-    
     """
     angle = 0
     if detectAngle:
         # 进行文字旋转方向检测，分为[0, 90, 180, 270]四种情况
-        angle = angle_detect(img=np.copy(img))  ##文字朝向检测
+        angle = angle_detect(img=np.copy(img))  # 文字朝向检测
         print('The angel of this character is:', angle)
         im = Image.fromarray(img)
         print('Rotate the array of this img!')
@@ -111,23 +113,33 @@ def model(img, model='keras', adjust=False, detectAngle=False):
         elif angle == 270:
             im = im.transpose(Image.ROTATE_270)
         img = np.array(im)
-    #获取图片resize比例f
-    ii, f = resize_im(img, 900, 1500)
-    # 进行图像中的文字区域的识别
-    text_recs, tmp, img = text_detect(img)
-    # 识别区域排列
-    text_recs = sort_box(text_recs)
-    #copy text_recs
-    text_recs_copy = copy.deepcopy(text_recs)
-    #计算原图检测框坐标
-    for i in range(len(text_recs)):
-        for j in range(len(text_recs[i])):
-            text_recs_copy[i][j] = text_recs_copy[i][j] * 1/f
-    ocr_region_res = []
-    for region in text_recs_copy:
-        ocr_region_res.append(list(map(lambda x: int(x), region)))
-    result = crnnRec(img, text_recs, model, adjust=adjust)
-    return result, tmp, angle, ocr_region_res
+
+    if detect == "ctpn":
+        # 获取图片resize比例f
+        ii, f = resize_im(img, 900, 1500)
+        # 使用ctpn进行图像中的文字区域的识别
+        text_recs, tmp, img = text_detect(img)
+        # 识别区域排列
+        text_recs = sort_box(text_recs)
+        # copy text_recs
+        text_recs_copy = copy.deepcopy(text_recs)
+        # 计算原图检测框坐标
+        for i in range(len(text_recs)):
+            for j in range(len(text_recs[i])):
+                text_recs_copy[i][j] = text_recs_copy[i][j] * 1/f
+        ocr_region_res = []
+        for region in text_recs_copy:
+            ocr_region_res.append(list(map(lambda x: int(x), region)))
+        result = crnnRec(img, text_recs, model, adjust=adjust)
+        return result, img, angle, ocr_region_res
+
+    elif detect == "east":
+        texr_reccs, img = east_detect.east_detect(img_path)
+        ocr_region_res = []
+        for region in texr_reccs:
+            ocr_region_res.append(list(map(lambda x: int(x), region)))
+        result = crnnRec(img, texr_reccs, model, adjust=adjust)
+        return result, img, angle, ocr_region_res
 
 
 def sort_box(box):
@@ -145,3 +157,4 @@ def sort_box(box):
 
     box = sorted(box, key=lambda x: sum([x[1], x[3], x[5], x[7]]))
     return box
+

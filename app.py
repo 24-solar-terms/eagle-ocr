@@ -11,13 +11,14 @@ def exe_ocr():
 
     if request.method == 'POST':
         img_path = request.form.get('img_path')
+        detection = request.form.get('detection')
         # 读取图片
         im = Image.open(img_path)
         img = np.array(im.convert('RGB'))
 
         # 执行ocr获得结果
         result, img, angle, ocr_region_res = model.model(
-            img, model='pytorch', adjust=False, detectAngle=False)
+            img, img_path, model='pytorch', adjust=False, detectAngle=False, detect=detection)
 
         ocr_text_res = []
         for i, key in enumerate(result):
