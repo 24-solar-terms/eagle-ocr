@@ -8,10 +8,24 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def exe_ocr():
+    """
+    OCR算法服务接口
+    :return: json数据, 字典结构, 识别结果, 包括文字框坐标和识别文字
+             文字框坐标顺序左上, 右上, 左下, 右下
+             识别文字与文字框坐标对应
+             {
+                'ocr_text_res': ocr_text_res,
+                'ocr_region_res': ocr_region_res
+             }
+    """
 
     if request.method == 'POST':
         img_path = request.form.get('img_path')
         detection = request.form.get('detection')
+
+        if not detection:
+            detection = 'ctpn'
+
         # 读取图片
         im = Image.open(img_path)
         img = np.array(im.convert('RGB'))
