@@ -128,6 +128,7 @@ dmypy.json
 .pyre/
 
 # my files
+tmp/
 .idea/
 __pycache__/
 my_model_keras.h5

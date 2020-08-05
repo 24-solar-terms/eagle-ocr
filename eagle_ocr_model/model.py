@@ -16,6 +16,7 @@ from .ctpn.text_detect import text_detect
 from .ctpn.ctpn.other import resize_im  #获取图片resize比例
 from .ocr.model import predict as ocr
 from .east import east_detect
+from .PSENet import PSE_detect
 
 
 def crnnRec(im, text_recs, ocrMode='keras', adjust=False):
@@ -141,6 +142,13 @@ def model(img, img_path, model='keras', adjust=False, detectAngle=False, detect=
         result = crnnRec(img, texr_reccs, model, adjust=adjust)
         return result, img, angle, ocr_region_res
 
+    elif detect == "pse":
+        texr_reccs, img = PSE_detect.PSE_detect(img_path)
+        ocr_region_res = []
+        for region in texr_reccs:
+            ocr_region_res.append(list(map(lambda x: int(x), region)))
+        result = crnnRec(img, texr_reccs, model, adjust=adjust)
+        return result, img, angle, ocr_region_res
 
 def sort_box(box):
     """
