@@ -33,7 +33,7 @@ def load_tf_model():
     saver = tf.train.Saver()
     # sess = tf.Session(config=config)
     sess = tf.Session()
-    ckpt_path = '/home/guyu.gy/eagle-ocr/eagle_ocr_model/ctpn/checkpoints'
+    ckpt_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'checkpoints')
     ckpt = tf.train.get_checkpoint_state(ckpt_path)
     reader = tf.train.NewCheckpointReader(ckpt.model_checkpoint_path)
     var_to_shape_map = reader.get_variable_to_shape_map()
