@@ -4,7 +4,7 @@
 import os,sys
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parentdir)
-sys.path.append('/home/guyu.gy/eagle-ocr/eagle_ocr_model/ocr')
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 # from PIL import Image
 import keras.backend as K
 from . import keys_ocr
@@ -91,7 +91,7 @@ characters = keys_ocr.alphabet[:]
 # 我的注释25：加载预先训练好的CRNN网络的权重W的文件，modelPath指定存放路径
 
 # modelPath = os.path.join(os.getcwd(), "ocr/ocr0.2.h5")
-modelPath = '/home/guyu.gy/eagle-ocr/eagle_ocr_model/ocr/ocr0.2.h5'
+modelPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'my_model_keras.h5')
 height = 32
 
 # 我的注释26：应该表示的是能够预测出的汉族种类数，多少种汉字，汉在存在keys_ocr文件中
