@@ -1,8 +1,8 @@
 # coding:utf-8
 import sys
-
+import os
 sys.path.insert(1, "./crnn")
-sys.path.append('/home/guyu.gy/eagle-ocr/eagle_ocr_model/crnn')
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 import torch
 import torch.utils.data
 from torch.autograd import Variable
@@ -42,7 +42,7 @@ def crnnSource():
         model = crnn.CRNN(32, 1, len(alphabet) + 1, 256, 1).cuda()
     else:
         model = crnn.CRNN(32, 1, len(alphabet) + 1, 256, 1).cpu()
-    path = '/home/guyu.gy/eagle-ocr/eagle_ocr_model/crnn/samples/model_acc97.pth'
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'samples/model_acc97.pth')
     model.eval()
     model.load_state_dict(torch.load(path))
     return model, converter
