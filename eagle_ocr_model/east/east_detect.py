@@ -6,9 +6,10 @@ from . import locality_aware_nms as nms_locality
 # import lanms
 from . import east_model
 from .icdar import restore_rectangle
+import os
 
 tf.reset_default_graph()
-checkpoint_path = "/home/guyu.gy/eagle-ocr/eagle_ocr_model/east/checkpoints"
+checkpoint_path = checkpoint_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'checkpoints')
 output_dir = 'C:/Users/50298/Desktop/ocr/test/sres/'
 gpu_list = '0'
 no_write_images = False
