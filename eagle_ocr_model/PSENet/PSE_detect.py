@@ -18,10 +18,10 @@ from .nets import model
 from .pse import pse
 
 
-test_data_path = './tmp/'
+test_data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'tmp')
 gpu_list = '0'
 checkpoint_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'checkpoints')
-output_dir = './tmp/'
+output_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'tmp')
 no_write_images = True
 
 logger.setLevel(cfg.debug)
