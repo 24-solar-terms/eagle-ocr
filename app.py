@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from eagle_ocr_model import model
-from PIL import Image
+from PIL import Image, ExifTags
 import numpy as np
 
 app = Flask(__name__)
@@ -28,6 +28,21 @@ def exe_ocr():
 
         # 读取图片
         im = Image.open(img_path)
+        # 防止图片旋转
+        try:
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == 'Orientation':
+                    break
+            exif = dict(im._getexif().items())
+            if exif[orientation] == 3:
+                im = im.rotate(180, expand=True)
+            elif exif[orientation] == 6:
+                im = im.rotate(270, expand=True)
+            elif exif[orientation] == 8:
+                im = im.rotate(90, expand=True)
+        except:
+            pass
+
         img = np.array(im.convert('RGB'))
 
         # 执行ocr获得结果
