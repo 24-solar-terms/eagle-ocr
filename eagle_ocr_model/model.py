@@ -142,7 +142,7 @@ def model(img, img_path, model='keras', adjust=False, detectAngle=False, detect=
         result = crnnRec(img, texr_reccs, model, adjust=adjust)
         return result, img, angle, ocr_region_res
 
-    elif detect == "pse":
+    elif detect == "psenet":
         texr_reccs, img = PSE_detect.PSE_detect(img_path)
         ocr_region_res = []
         for region in texr_reccs:
